@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harpreet Cryogenics - Stock & Accounting Management</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f4f7fc; font-family: 'Plus Jakarta Sans', sans-serif; color: #334155; }
+        .sidebar { width: 260px; min-height: 100vh; background: #ffffff; border-right: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; z-index: 100; box-shadow: 4px 0 15px rgba(0,0,0,0.02); transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
+        .main-content { margin-left: 260px; padding: 30px; transition: all 0.3s ease; }
+        .nav-link { color: #64748b; font-weight: 600; padding: 12px 20px; border-radius: 10px; margin: 6px 14px; transition: all 0.2s ease; cursor: pointer; }
+        .nav-link:hover, .nav-link.active { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #fff !important; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25); }
+        .nav-link i { width: 25px; }
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-card { width: 100%; max-width: 420px; padding: 45px; background: #ffffff; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .form-control, .form-select { border-radius: 10px; padding: 12px 15px; border: 1px solid #cbd5e1; }
+        .form-control:focus, .form-select:focus { box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15); border-color: #0284c7; }
+        .card { border-radius: 16px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .btn-primary { background: #0284c7; border: none; border-radius: 10px; padding: 12px; font-weight: 600; transition: all 0.2s; }
+        .btn-primary:hover { background: #0369a1; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); }
+        .mobile-header { display: none; background: #ffffff; padding: 12px 20px; border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; width: 100%; z-index: 101; }
+        
+        .admin-restricted { display: none; }
+
+        @media (max-width: 991px) {
+            .mobile-header { display: flex; justify-content: space-between; align-items: center; }
+            .sidebar { transform: translateX(-100%); width: 260px !important; position: fixed !important; top: 60px !important; height: calc(100vh - 60px) !important; z-index: 1050; }
+            .sidebar.show { transform: translateX(0%); }
+            .main-content { margin-left: 0 !important; padding: 20px 15px !important; margin-top: 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <div class="bg-light text-primary d-inline-flex p-3 rounded-circle mb-3 shadow-sm">
+                    <i class="fas fa-industry fa-2x"></i>
+                </div>
+                <h3 class="fw-bold text-dark mb-1">Harpreet Cryogenics</h3>
+                <p class="text-muted small">Cylinder & Accounting Management</p>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-muted">USERNAME</label>
+                <input type="text" id="loginUsername" class="form-control" placeholder="Enter username">
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold small text-muted">PASSWORD</label>
+                <input type="password" id="loginPassword" class="form-control" placeholder="Enter password">
+            </div>
+            <div id="loginError" class="alert alert-danger d-none py-2 small text-center mb-3">Galat Username ya Password!</div>
+            <button type="button" class="btn btn-primary w-100 shadow-sm" onclick="handleLogin()">Login to Dashboard</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="appContainer" class="d-none">
+        
+        <!-- MOBILE TOP BAR -->
+        <div class="mobile-header">
+            <div class="d-flex align-items-center">
+                <button type="button" class="btn btn-outline-primary border-0 me-2 p-1" onclick="toggleSidebar()">
+                    <i class="fas fa-ellipsis-v fa-lg"></i>
+                </button>
+                <i class="fas fa-fire text-primary fa-lg me-2"></i>
+                <h5 class="fw-bold text-dark m-0">Harpreet Cryo</h5>
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div id="appSidebar" class="sidebar">
+            <div>
+                <div class="p-4 border-bottom d-none d-lg-flex align-items-center">
+                    <i class="fas fa-fire text-primary fa-lg me-2"></i>
+                    <h5 class="fw-bold text-dark m-0">Harpreet Cryo</h5>
+                </div>
+                <ul class="nav flex-column mt-3">
+                    <li class="nav-item"><a class="nav-link active" onclick="showSection('dashboardSection', this); toggleSidebar();"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" onclick="showSection('godownSection', this); toggleSidebar();"><i class="fas fa-warehouse"></i> Godown Stock</a></li>
+                    <li class="nav-item"><a class="nav-link" onclick="showSection('trackerSection', this); toggleSidebar();"><i class="fas fa-route"></i> Journey Tracker</a></li>
+                    <li class="nav-item"><a class="nav-link" onclick="showSection('holdingSection', this); toggleSidebar();"><i class="fas fa-exclamation-triangle"></i> Holding & Rent</a></li>
+                    <li class="nav-item"><a class="nav-link admin-restricted" onclick="showSection('ledgerSection', this); toggleSidebar();" id="navLedger"><i class="fas fa-book"></i> Customer Ledger & Pay</a></li>
+                    <li class="nav-item"><a class="nav-link" onclick="showSection('profileViewerSection', this); toggleSidebar();"><i class="fas fa-id-card"></i> Customer/Staff Profile</a></li>
+                    <li class="nav-item"><a class="nav-link admin-restricted" onclick="showSection('payrollSection', this); toggleSidebar();" id="navPayroll"><i class="fas fa-money-check-alt"></i> Staff Payroll</a></li>
+                    <li class="nav-item"><a class="nav-link" onclick="showSection('reportsSection', this); toggleSidebar();"><i class="fas fa-chart-pie"></i> Visual Dashboard</a></li>
+                </ul>
+            </div>
+            <div class="p-3 border-top bg-light d-none d-lg-block">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="small text-muted d-block">Role:</span>
+                        <span id="displayRoleBadge" class="badge bg-success">Admin</span>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- DASHBOARD SECTION -->
+            <div id="dashboardSection" class="page-section">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><div class="card p-3 shadow-sm border-0"><small class="text-muted fw-bold">Total Cylinders</small><h3 class="fw-bold mb-0 text-dark" id="totalCylinders">0</h3></div></div>
+                    <div class="col-md-3"><div class="card p-3 shadow-sm border-0"><small class="text-muted fw-bold">In Godown (Full)</small><h3 class="fw-bold text-success mb-0" id="fullCylinders">0</h3></div></div>
+                    <div class="col-md-3"><div class="card p-3 shadow-sm border-0"><small class="text-muted fw-bold">Godown (Empty/Refill)</small><h3 class="fw-bold text-warning mb-0" id="emptyCylinders">0</h3></div></div>
+                    <div class="col-md-3"><div class="card p-3 shadow-sm border-0"><small class="text-muted fw-bold">With Customers</small><h3 class="fw-bold text-danger mb-0" id="customerCylinders">0</h3></div></div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm border-0 p-4 mb-4">
+                            <h5 class="fw-bold mb-3 text-dark"><i class="fas fa-plus-circle text-primary me-2"></i>Cylinder Entry Form</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Cylinder No.</label>
+                                    <div class="input-group">
+                                        <input type="text" id="cylinderNo" class="form-control" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="generateAutoCylinderNo()"><i class="fas fa-sync"></i></button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Company / Customer Name</label>
+                                    <select id="companySelect" class="form-select"></select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">Gas Type</label>
+                                    <select id="gasSelect" class="form-select"></select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">Capacity</label>
+                                    <select id="capacity" class="form-select">
+                                        <option value="1 m³">1 m³</option>
+                                        <option value="3 m³">3 m³</option>
+                                        <option value="5 m³">5 m³</option>
+                                        <option value="7 m³">7 m³</option>
+                                        <option value="Bulk Bank">Bulk Bank</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">Status</label>
+                                    <select id="statusSelect" class="form-select">
+                                        <option value="In Stock">In Stock (Godown - Full)</option>
+                                        <option value="Out Stock">Out Stock (Given to Customer)</option>
+                                        <option value="Refill">Refill Plant</option>
+                                        <option value="Empty">Empty (Godown Yard)</option>
+                                        <option value="Damaged">Damaged</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Quantity</label>
+                                    <input type="number" id="quantity" class="form-control" value="1" min="1">
+                                </div>
+                                <div class="col-md-6 admin-restricted" id="billAmountBox">
+                                    <label class="form-label small fw-bold">Bill Amount (₹) [Optional]</label>
+                                    <input type="number" id="billAmount" class="form-control" value="0" min="0">
+                                </div>
+                                <div class="col-md-12 mt-3">
+                                    <button type="button" class="btn btn-primary w-100 py-2 shadow-sm" onclick="submitCylinderEntry()"><i class="fas fa-save me-2"></i>Submit Entry</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Control Box -->
+                    <div class="col-lg-4 admin-restricted" id="adminControlPanel">
+                        <div class="card shadow-sm border-0 p-3 mb-3">
+                            <h6 class="fw-bold text-dark mb-2"><i class="fas fa-building text-primary me-2"></i>Manage Companies</h6>
+                            <div class="input-group mb-2">
+                                <input type="text" id="newCompanyName" class="form-control form-control-sm" placeholder="Enter Company Name">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addCompany()">+ Add</button>
+                            </div>
+                            <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="deleteCompany()">Delete Selected Company</button>
+                        </div>
+                        <div class="card shadow-sm border-0 p-3">
+                            <h6 class="fw-bold text-dark mb-2"><i class="fas fa-fire text-primary me-2"></i>Manage Gas Types</h6>
+                            <div class="input-group mb-2">
+                                <input type="text" id="newGasInput" class="form-control form-control-sm" placeholder="Example: Acetylene">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addNewGas()">+ Add</button>
+                            </div>
+                            <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="deleteGas()">Delete Selected Gas</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mt-4">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h5 class="fw-bold m-0 text-dark">Recent Stock Activity</h5>
+                        <div class="d-flex gap-2">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Search..." onkeyup="filterCylinders()">
+                            <button type="button" class="btn btn-success btn-sm text-nowrap" onclick="exportStockCSV()"><i class="fas fa-file-excel me-1"></i>Export Stock</button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Cylinder No.</th>
+                                        <th>Company</th>
+                                        <th>Gas</th>
+                                        <th>Capacity</th>
+                                        <th>Status</th>
+                                        <th>Qty</th>
+                                        <th class="admin-restricted table-action-header">Bill (₹)</th>
+                                        <th>Date</th>
+                                        <th class="admin-restricted table-action-header">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cylinderTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GODOWN SECTION -->
+            <div id="godownSection" class="page-section d-none">
+                <h3 class="fw-bold mb-4">Godown Stock Breakdown</h3>
+                <div class="card shadow-sm border-0 p-4 mb-4">
+                    <h5>Total Godown Cylinders: <span id="godownTotalCount" class="text-success fw-bold">0</span></h5>
+                </div>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                        <span>Party Wise Godown Stock</span>
+                        <button type="button" class="btn btn-success btn-sm" onclick="exportGodownCSV()"><i class="fas fa-file-excel me-1"></i>Export Godown Stock</button>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead class="table-light"><tr><th>Party Name</th><th class="text-center">Full</th><th class="text-center">Empty</th><th class="text-center">Damaged</th><th class="text-center">Total</th></tr></thead>
+                            <tbody id="godownPartyTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOURNEY TRACKER -->
+            <div id="trackerSection" class="page-section d-none">
+                <h3 class="fw-bold mb-4">Journey Tracker</h3>
+                <div class="card shadow-sm border-0 p-4 mb-4">
+                    <div class="input-group">
+                        <input type="text" id="trackerSearchInput" class="form-control" placeholder="Enter Cylinder No (e.g. HC-1001)">
+                        <button type="button" class="btn btn-primary" onclick="trackCylinderHistory()">Track History</button>
+                    </div>
+                </div>
+                <ul id="historyTimeline" class="list-group"></ul>
+            </div>
+
+            <!-- HOLDING & RENT -->
+            <div id="holdingSection" class="page-section d-none">
+                <h3 class="fw-bold mb-4">Holding & Rent Alerts</h3>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead class="table-light"><tr><th>Cylinder No</th><th>Customer</th><th>Issue Date</th><th class="text-center">Days Held</th><th>Status</th><th class="text-end admin-restricted table-action-header">Est. Rent Penalty</th></tr></thead>
+                            <tbody id="holdingTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUSTOMER LEDGER & PAYMENT (ADMIN ONLY) -->
+            <div id="ledgerSection" class="page-section d-none">
+                <h3 class="fw-bold mb-4">Customer Ledger & Advance Payment Tracking</h3>
+                
+                <div class="card shadow-sm border-0 p-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="fas fa-rupee-sign text-success me-2"></i>Record Payment / Advance Money</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Select Customer</label>
+                            <select id="paymentCustomerSelect" class="form-select"></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Month / Period</label>
+                            <input type="text" id="paymentMonthInput" class="form-control" placeholder="e.g. August 2026">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Amount Received (₹)</label>
+                            <input type="number" id="paymentReceivedInput" class="form-control" placeholder="Enter amount">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-success w-100 py-2 shadow-sm" onclick="recordCustomerPayment()"><i class="fas fa-check me-1"></i>Save</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold m-0 text-dark">Customer Accounts & Advance Balances</h5>
+                        <button type="button" class="btn btn-success btn-sm" onclick="exportCustomerLedgerCSV()"><i class="fas fa-file-excel me-1"></i>Export Customer Ledger</button>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Customer Name</th>
+                                    <th class="text-center">Cylinders Held</th>
+                                    <th class="text-end">Total Bill (₹)</th>
+                                    <th class="text-end">Total Paid (₹)</th>
+                                    <th class="text-end">Balance Due / (Advance) (₹)</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledgerTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="fw-bold m-0 text-dark">Customer Payment History (Month-wise Log)</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Customer Name</th>
+                                    <th>Month / Period</th>
+                                    <th class="text-end">Amount Paid (₹)</th>
+                                    <th>Date Recorded</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentHistoryTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUSTOMER & STAFF PROFILE VIEWER -->
+            <div id="profileViewerSection" class="page-section d-none">
+                <h3 class="fw-bold mb-4"><i class="fas fa-id-card text-primary me-2"></i>Customer & Staff Complete Profile Viewer</h3>
+                
+                <ul class="nav nav-pills mb-3" id="profileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold" id="customer-tab-btn" onclick="switchProfileTab('customer')">Customer Profile</button>
+                    </li>
+                    <li class="nav-item ms-2 role-restricted-tab" role="presentation" id="staffTabLi">
+                        <button class="nav-link fw-bold" id="staff-tab-btn" onclick="switchProfileTab('staff')">Staff Profile</button>
+                    </li>
+                </ul>
+
+                <!-- Customer Profile View -->
+                <div id="customerProfileContainer">
+                    <div class="card shadow-sm border-0 p-4 mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <label class="form-label small fw-bold">Select Customer / Company</label>
+                                <select id="viewerCompanySelect" class="form-select" onchange="loadCustomerProfile()"></select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-primary w-100" onclick="loadCustomerProfile()">View Profile</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="customerProfileResult" class="d-none">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3 admin-restricted profile-bill-card"><div class="card p-3 shadow-sm border-0 bg-light"><small class="text-muted fw-bold">Total Bill / Purchase</small><h4 class="fw-bold text-dark mb-0" id="profileTotalBill">₹0</h4></div></div>
+                            <div class="col-md-3 admin-restricted profile-bill-card"><div class="card p-3 shadow-sm border-0 bg-light"><small class="text-muted fw-bold">Total Amount Paid</small><h4 class="fw-bold text-success mb-0" id="profileTotalPaid">₹0</h4></div></div>
+                            <div class="col-md-3 admin-restricted profile-bill-card"><div class="card p-3 shadow-sm border-0 bg-light"><small class="text-muted fw-bold">Balance Due / Advance</small><h4 class="fw-bold text-danger mb-0" id="profileBalanceDue">₹0</h4></div></div>
+                            <div class="col-md-3"><div class="card p-3 shadow-sm border-0 bg-light"><small class="text-muted fw-bold">Cylinders Held</small><h4 class="fw-bold text-primary mb-0" id="profileCylindersHeld">0</h4></div></div>
+                        </div>
+
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-header bg-white py-3"><h5 class="fw-bold m-0 text-dark">Cylinders Taken by Customer</h5></div>
+                            <div class="card-body p-0">
+                                <table class="table mb-0">
+                                    <thead class="table-light"><tr><th>Cylinder No.</th><th>Gas Type</th><th>Capacity</th><th>Status</th><th class="admin-restricted table-action-header">Bill (₹)</th><th>Date</th></tr></thead>
+                                    <tbody id="profileCylindersTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm border-0 admin-restricted" id="profilePaymentLogCard">
+                            <div class="card-header bg-white py-3"><h5 class="fw-bold m-0 text-dark">Payment History Log</h5></div>
+                            <div class="card-body p-0">
+                                <table class="table mb-0">
+                                    <thead class="table-light"><tr><th>Month / Period</th><th class="text-end">Amount Paid (₹)</th><th>Date Recorded</th></tr></thead>
+                                    <tbody id="profilePaymentsTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Profile View (Admin Only) -->
+                <div id="staffProfileContainer" class="d-none">
+                    <div class="card shadow-sm border-0 p-4 mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <label class="form-label small fw-bold">Select Staff Member</label>
+                                <select id="viewerStaffSelect" class="form-select" onchange="loadStaffProfile()"><option value=''>-- Select Staff --</option></select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-primary w-100" onclick="loadStaffProfile()">View Profile</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="staffProfileResult" class="d-none">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3"><h5 class="fw-bold m-0 text-dark">Staff Salary & Advance History</h5></div>
+                            <div class="card-body p-0">
+                                <table class="table mb-0">
+                                    <thead class="table-light"><tr><th>Month</th><th class="text-end">Basic Salary (₹)</th><th class="text-end">Advance Given (₹)</th><th class="text-end">Net Payable (₹)</th></tr></thead>
+                                    <tbody id="profileStaffTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STAFF PAYROLL (ADMIN ONLY) -->
+            <div id="payrollSection" class="page-section d-none">
+                <h3 class="fw-bold mb-4">Staff Payroll Management</h3>
+                <div class="card shadow-sm border-0 p-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="fas fa-user-tie text-primary me-2"></i>Add Staff Salary / Advance Entry</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Staff Name</label>
+                            <input type="text" id="staffName" class="form-control" placeholder="Staff Name">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Month</label>
+                            <input type="text" id="salaryMonth" class="form-control" placeholder="e.g. August 2026">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Basic Salary (₹)</label>
+                            <input type="number" id="basicSalary" class="form-control" value="0">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Advance Given (₹)</label>
+                            <input type="number" id="advanceSalary" class="form-control" value="0">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary w-100 py-2" onclick="savePayrollEntry()">Save Salary</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold m-0 text-dark">Staff Salary & History Records</h5>
+                        <button type="button" class="btn btn-success btn-sm" onclick="exportPayrollCSV()"><i class="fas fa-file-excel me-1"></i>Export Payroll Excel</button>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Staff Name</th>
+                                    <th>Month</th>
+                                    <th class="text-end">Basic Salary (₹)</th>
+                                    <th class="text-end">Advance (₹)</th>
+                                    <th class="text-end">Net Payable (₹)</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payrollTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISUAL DASHBOARD -->
+            <div id="reportsSection" class="page-section d-none">
+                <h3 class="fw-bold mb-4"><i class="fas fa-chart-pie text-primary me-2"></i>Visual Analytics Dashboard</h3>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card p-4 shadow-sm border-0">
+                            <h5 class="fw-bold text-dark mb-3">Gas Type Breakdown</h5>
+                            <canvas id="gasChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card p-4 shadow-sm border-0">
+                            <h5 class="fw-bold text-dark mb-3">Stock Status Summary</h5>
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzWzk1nIc_G23FYFStARbyn-eyZqueDMHNJuOmVdHQaVKpPLMa33koLAEuoKPzAJEY/exec";
+
+        const USERS = {
+            "admin": { password: "admin123", role: "Admin" },
+            "staff": { password: "staff123", role: "Staff" }
+        };
+
+        let currentRole = null;
+        let cylinders = [];
+        let payments = JSON.parse(localStorage.getItem("customerPayments")) || {};
+        let paymentHistory = JSON.parse(localStorage.getItem("customerPaymentHistory")) || [];
+        let payrolls = JSON.parse(localStorage.getItem("staffPayrolls")) || [];
+        let defaultGases = ["Oxygen", "Nitrogen", "Argon", "CO2", "Helium", "Acetylene", "Hydrogen"];
+        let defaultCompanies = ["ABC Industries", "XYZ Hospital", "Harpreet Gas", "sudhanshu"];
+        let gasChartInstance = null;
+        let statusChartInstance = null;
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById("appSidebar");
+            if (sidebar) sidebar.classList.toggle("show");
+        }
+
+        function generateAutoCylinderNo() {
+            let maxNum = 1000; 
+            cylinders.forEach(c => {
+                if (c.cylinderNo) {
+                    let matches = c.cylinderNo.match(/\d+/);
+                    if (matches) {
+                        let num = parseInt(matches[0]);
+                        if (num > maxNum) maxNum = num;
+                    }
+                }
+            });
+            let nextNumber = `HC-${maxNum + 1}`;
+            const cylinderInput = document.getElementById("cylinderNo");
+            if (cylinderInput) cylinderInput.value = nextNumber;
+        }
+
+        function handleLogin() {
+            const userElem = document.getElementById("loginUsername");
+            const passElem = document.getElementById("loginPassword");
+            const errorDiv = document.getElementById("loginError");
+
+            if (!userElem || !passElem) return;
+
+            const user = userElem.value.trim().toLowerCase();
+            const pass = passElem.value.trim();
+
+            if (USERS[user] && USERS[user].password === pass) {
+                currentRole = USERS[user].role;
+                localStorage.setItem("userRole", currentRole);
+                
+                document.getElementById("loginOverlay").classList.add("d-none");
+                document.getElementById("appContainer").classList.remove("d-none");
+                document.getElementById("displayRoleBadge").textContent = currentRole;
+
+                applyRolePermissions();
+                loadCylindersFromGoogleSheet();
+                if (errorDiv) errorDiv.classList.add("d-none");
+            } else {
+                if (errorDiv) errorDiv.classList.remove("d-none");
+            }
+        }
+
+        function handleLogout() {
+            currentRole = null;
+            localStorage.removeItem("userRole");
+            document.getElementById("loginUsername").value = "";
+            document.getElementById("loginPassword").value = "";
+            document.getElementById("loginOverlay").classList.remove("d-none");
+            document.getElementById("appContainer").classList.add("d-none");
+        }
+
+        function applyRolePermissions() {
+            const adminRestrictedElems = document.querySelectorAll(".admin-restricted");
+            adminRestrictedElems.forEach(el => {
+                if (currentRole === "Admin") {
+                    if (el.tagName === "TH" || el.classList.contains("table-action-header") || el.tagName === "TD") {
+                        el.style.display = "table-cell";
+                    } else {
+                        el.style.display = "block";
+                    }
+                    if(el.id === "adminControlPanel") el.style.display = "block";
+                } else {
+                    el.style.display = "none";
+                }
+            });
+
+            // Handle Staff Profile Tab visibility for Staff role
+            const staffTabLi = document.getElementById("staffTabLi");
+            if (staffTabLi) {
+                if (currentRole === "Admin") {
+                    staffTabLi.style.display = "block";
+                } else {
+                    staffTabLi.style.display = "none";
+                }
+            }
+            displayCylinders();
+        }
+
+        function loadDropdowns() {
+            let savedGases = JSON.parse(localStorage.getItem("gasList")) || defaultGases;
+            const gasSelect = document.getElementById("gasSelect");
+            if (gasSelect) {
+                gasSelect.innerHTML = "";
+                savedGases.forEach(gas => {
+                    let opt = document.createElement("option"); opt.value = gas; opt.textContent = gas;
+                    gasSelect.appendChild(opt);
+                });
+            }
+
+            let savedCompanies = JSON.parse(localStorage.getItem("companyList")) || defaultCompanies;
+            const compSelect = document.getElementById("companySelect");
+            const payCompSelect = document.getElementById("paymentCustomerSelect");
+            const viewerCompSelect = document.getElementById("viewerCompanySelect");
+
+            if (compSelect) {
+                compSelect.innerHTML = "";
+                if (payCompSelect) payCompSelect.innerHTML = "";
+                if (viewerCompSelect) viewerCompSelect.innerHTML = "<option value=''>-- Select Customer/Company --</option>";
+
+                savedCompanies.forEach(comp => {
+                    let opt1 = document.createElement("option"); opt1.value = comp; opt1.textContent = comp;
+                    compSelect.appendChild(opt1);
+                    if (payCompSelect) {
+                        let opt2 = document.createElement("option"); opt2.value = comp; opt2.textContent = comp;
+                        payCompSelect.appendChild(opt2);
+                    }
+                    if (viewerCompSelect) {
+                        let opt3 = document.createElement("option"); opt3.value = comp; opt3.textContent = comp;
+                        viewerCompSelect.appendChild(opt3);
+                    }
+                });
+            }
+
+            const viewerStaffSelect = document.getElementById("viewerStaffSelect");
+            if (viewerStaffSelect) {
+                viewerStaffSelect.innerHTML = "<option value=''>-- Select Staff Member --</option>";
+                let uniqueStaff = [...new Set(payrolls.map(p => p.name))];
+                uniqueStaff.forEach(stf => {
+                    let opt = document.createElement("option"); opt.value = stf; opt.textContent = stf;
+                    viewerStaffSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function addNewGas() {
+            const gasInput = document.getElementById("newGasInput");
+            const newGas = gasInput.value.trim();
+            if (!newGas) return alert("Gas name enter kijiye!");
+            let savedGases = JSON.parse(localStorage.getItem("gasList")) || defaultGases;
+            savedGases.push(newGas);
+            localStorage.setItem("gasList", JSON.stringify(savedGases));
+            loadDropdowns();
+            gasInput.value = "";
+            alert(`Gas added successfully!`);
+        }
+
+        function deleteGas() {
+            if (currentRole !== 'Admin') return alert("Sirf Admin delete kar sakta hai!");
+            const gasSelect = document.getElementById("gasSelect");
+            let savedGases = JSON.parse(localStorage.getItem("gasList")) || defaultGases;
+            savedGases = savedGases.filter(g => g !== gasSelect.value);
+            localStorage.setItem("gasList", JSON.stringify(savedGases));
+            loadDropdowns();
+            alert("Gas deleted!");
+        }
+
+        function addCompany() {
+            const compInput = document.getElementById("newCompanyName");
+            const newComp = compInput.value.trim();
+            if (!newComp) return alert("Company name enter kijiye!");
+            let savedCompanies = JSON.parse(localStorage.getItem("companyList")) || defaultCompanies;
+            savedCompanies.push(newComp);
+            localStorage.setItem("companyList", JSON.stringify(savedCompanies));
+            loadDropdowns();
+            compInput.value = "";
+            alert(`Company added successfully!`);
+        }
+
+        function deleteCompany() {
+            if (currentRole !== 'Admin') return alert("Sirf Admin delete kar sakta hai!");
+            const compSelect = document.getElementById("companySelect");
+            let savedCompanies = JSON.parse(localStorage.getItem("companyList")) || defaultCompanies;
+            savedCompanies = savedCompanies.filter(c => c !== compSelect.value);
+            localStorage.setItem("companyList", JSON.stringify(savedCompanies));
+            loadDropdowns();
+            alert("Company deleted!");
+        }
+
+        function showSection(sectionId, navElement) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('d-none'));
+            document.getElementById(sectionId).classList.remove('d-none');
+            if(navElement) {
+                document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
+                navElement.classList.add('active');
+            }
+            if(sectionId === 'godownSection') updateGodownStockDetails();
+            if(sectionId === 'ledgerSection') { updateCustomerLedger(); updatePaymentHistoryTable(); }
+            if(sectionId === 'holdingSection') updateHoldingAlerts();
+            if(sectionId === 'payrollSection') { updatePayrollTable(); loadDropdowns(); }
+            if(sectionId === 'profileViewerSection') { loadDropdowns(); switchProfileTab('customer'); }
+            if(sectionId === 'reportsSection') renderCharts();
+        }
+
+        function switchProfileTab(type) {
+            const custBtn = document.getElementById("customer-tab-btn");
+            const staffBtn = document.getElementById("staff-tab-btn");
+            const custCont = document.getElementById("customerProfileContainer");
+            const staffCont = document.getElementById("staffProfileContainer");
+
+            if (type === 'customer') {
+                custBtn.classList.add("active");
+                if(staffBtn) staffBtn.classList.remove("active");
+                custCont.classList.remove("d-none");
+                if(staffCont) staffCont.classList.add("d-none");
+            } else {
+                if(currentRole !== 'Admin') return;
+                if(staffBtn) staffBtn.classList.add("active");
+                custBtn.classList.remove("active");
+                if(staffCont) staffCont.classList.remove("d-none");
+                custCont.classList.add("d-none");
+                loadDropdowns();
+            }
+        }
+
+        function loadCustomerProfile() {
+            const comp = document.getElementById("viewerCompanySelect").value;
+            const resDiv = document.getElementById("customerProfileResult");
+            if (!comp) {
+                resDiv.classList.add("d-none");
+                return;
+            }
+            resDiv.classList.remove("d-none");
+
+            let totalBill = 0;
+            let totalCylinders = 0;
+            let customerCylinders = [];
+            cylinders.forEach(c => {
+                if (c.company === comp) {
+                    totalBill += parseFloat(c.billAmount) || 0;
+                    totalCylinders += parseInt(c.quantity) || 1;
+                    customerCylinders.push(c);
+                }
+            });
+
+            let totalPaid = payments[comp] || 0;
+            let due = totalBill - totalPaid;
+
+            document.getElementById("profileTotalBill").textContent = `₹${totalBill}`;
+            document.getElementById("profileTotalPaid").textContent = `₹${totalPaid}`;
+            
+            let dueElem = document.getElementById("profileBalanceDue");
+            if (due > 0) {
+                dueElem.textContent = `₹${due} (Due)`;
+                dueElem.className = "fw-bold text-danger mb-0";
+            } else if (due < 0) {
+                dueElem.textContent = `₹${Math.abs(due)} (Advance)`;
+                dueElem.className = "fw-bold text-success mb-0";
+            } else {
+                dueElem.textContent = `₹0 (Cleared)`;
+                dueElem.className = "fw-bold text-muted mb-0";
+            }
+
+            document.getElementById("profileCylindersHeld").textContent = totalCylinders;
+
+            const cylTable = document.getElementById("profileCylindersTable");
+            cylTable.innerHTML = "";
+            if (customerCylinders.length === 0) {
+                cylTable.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No cylinders recorded for this customer.</td></tr>`;
+            } else {
+                customerCylinders.forEach(c => {
+                    let billCol = (currentRole === "Admin") ? `<td class="fw-bold admin-restricted" style="display: table-cell;">₹${c.billAmount || 0}</td>` : `<td class="fw-bold admin-restricted" style="display: none;"></td>`;
+                    let row = document.createElement("tr");
+                    row.innerHTML = `<td class="fw-bold">${c.cylinderNo}</td><td>${c.gas}</td><td>${c.capacity}</td><td><span class="badge bg-secondary">${c.status}</span></td>${billCol}<td>${c.date || 'Today'}</td>`;
+                    cylTable.appendChild(row);
+                });
+            }
+
+            const payTable = document.getElementById("profilePaymentsTable");
+            payTable.innerHTML = "";
+            let custPayments = paymentHistory.filter(p => p.customer === comp);
+            if (custPayments.length === 0) {
+                payTable.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">No payment records found.</td></tr>`;
+            } else {
+                custPayments.forEach(p => {
+                    let row = document.createElement("tr");
+                    row.innerHTML = `<td><span class="badge bg-info text-dark">${p.month}</span></td><td class="text-end fw-bold text-success">₹${p.amount}</td><td>${p.date}</td>`;
+                    payTable.appendChild(row);
+                });
+            }
+            applyRolePermissions();
+        }
+
+        function loadStaffProfile() {
+            const staffName = document.getElementById("viewerStaffSelect").value;
+            const resDiv = document.getElementById("staffProfileResult");
+            if (!staffName) {
+                resDiv.classList.add("d-none");
+                return;
+            }
+            resDiv.classList.remove("d-none");
+
+            const staffTable = document.getElementById("profileStaffTable");
+            staffTable.innerHTML = "";
+            let staffRecords = payrolls.filter(p => p.name === staffName);
+            if (staffRecords.length === 0) {
+                staffTable.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">No salary history found for this staff.</td></tr>`;
+            } else {
+                staffRecords.forEach(p => {
+                    let row = document.createElement("tr");
+                    row.innerHTML = `<td><span class="badge bg-secondary">${p.month}</span></td><td class="text-end">₹${p.basic}</td><td class="text-end text-warning">₹${p.advance}</td><td class="text-end fw-bold text-success">₹${p.net}</td>`;
+                    staffTable.appendChild(row);
+                });
+            }
+        }
+
+        function filterCylinders() {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = cylinders.filter(c => 
+                c.cylinderNo.toLowerCase().includes(query) ||
+                c.company.toLowerCase().includes(query) ||
+                c.gas.toLowerCase().includes(query)
+            );
+            displayCylinders(filtered);
+        }
+
+        function exportStockCSV() {
+            if (cylinders.length === 0) return alert("Export ke liye koi stock data nahi hai!");
+            let csv = "Date,Cylinder No,Company,Gas,Capacity,Quantity,Bill,Status\n";
+            cylinders.forEach(c => {
+                csv += `"${c.date || ''}","${c.cylinderNo}","${c.company}","${c.gas}","${c.capacity}",${c.quantity || 1},${c.billAmount || 0},"${c.status}"\n`;
+            });
+            downloadCSV(csv, "Harpreet_Cylinder_Stock.csv");
+        }
+
+        function exportGodownCSV() {
+            let csv = "Party Name,Full,Empty,Total\n";
+            let godownParties = {};
+            cylinders.forEach(c => {
+                if (c.status === "In Stock" || c.status === "Empty") {
+                    let comp = c.company || "Party";
+                    let qty = parseInt(c.quantity) || 1;
+                    if (!godownParties[comp]) godownParties[comp] = { full: 0, empty: 0, total: 0 };
+                    if (c.status === "In Stock") godownParties[comp].full += qty;
+                    else godownParties[comp].empty += qty;
+                    godownParties[comp].total += qty;
+                }
+            });
+            Object.keys(godownParties).forEach(party => {
+                let p = godownParties[party];
+                csv += `"${party}",${p.full},${p.empty},${p.total}\n`;
+            });
+            downloadCSV(csv, "Harpreet_Godown_Stock.csv");
+        }
+
+        function exportCustomerLedgerCSV() {
+            let csv = "Customer Name,Cylinders Held,Total Bill,Total Paid,Balance Due / Advance\n";
+            let savedCompanies = JSON.parse(localStorage.getItem("companyList")) || defaultCompanies;
+            let allCustomers = new Set([...savedCompanies, ...Object.keys(payments)]);
+            cylinders.forEach(c => allCustomers.add(c.company));
+
+            allCustomers.forEach(comp => {
+                if (!comp) return;
+                let totalBill = 0;
+                let totalCylinders = 0;
+                cylinders.forEach(c => {
+                    if (c.company === comp) {
+                        totalBill += parseFloat(c.billAmount) || 0;
+                        totalCylinders += parseInt(c.quantity) || 0;
+                    }
+                });
+                let paid = payments[comp] || 0;
+                let due = totalBill - paid;
+                csv += `"${comp}",${totalCylinders},${totalBill},${paid},${due}\n`;
+            });
+            downloadCSV(csv, "Harpreet_Customer_Ledger.csv");
+        }
+
+        function exportPayrollCSV() {
+            if (payrolls.length === 0) return alert("Export ke liye koi payroll data nahi hai!");
+            let csv = "Staff Name,Month,Basic Salary,Advance,Net Payable\n";
+            payrolls.forEach(p => {
+                csv += `"${p.name}","${p.month}",${p.basic},${p.advance},${p.net}\n`;
+            });
+            downloadCSV(csv, "Harpreet_Staff_Payroll.csv");
+        }
+
+        function downloadCSV(csvContent, fileName) {
+            let encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        async function submitCylinderEntry() {
+            const cylinderNo = document.getElementById("cylinderNo").value.trim();
+            const company = document.getElementById("companySelect").value;
+            const gas = document.getElementById("gasSelect").value;
+            const capacity = document.getElementById("capacity").value;
+            const status = document.getElementById("statusSelect").value;
+            const quantity = parseInt(document.getElementById("quantity").value) || 1;
+            const billAmount = (currentRole === "Admin") ? (parseFloat(document.getElementById("billAmount").value) || 0) : 0;
+
+            if (!cylinderNo) return alert("Cylinder No. daliye!");
+
+            const entryDate = new Date().toISOString().split('T')[0];
+            const cylinderData = { date: entryDate, cylinderNo, company, gas, capacity, quantity, billAmount, status };
+
+            cylinders.unshift(cylinderData);
+            displayCylinders();
+            updateDashboard();
+
+            document.getElementById("quantity").value = 1;
+            if(document.getElementById("billAmount")) document.getElementById("billAmount").value = 0;
+            generateAutoCylinderNo();
+
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST", mode: "no-cors",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(cylinderData)
+                });
+                alert(`Cylinder ${cylinderNo} entry saved!`);
+            } catch (err) { console.error(err); }
+        }
+
+        function displayCylinders(dataList = cylinders) {
+            const table = document.getElementById("cylinderTable");
+            if (!table) return;
+            table.innerHTML = "";
+            dataList.forEach((cylinder, index) => {
+                let billTd = (currentRole === "Admin") ? `<td class="fw-bold admin-restricted" style="display: table-cell;">₹${cylinder.billAmount || 0}</td>` : `<td class="fw-bold admin-restricted" style="display: none;"></td>`;
+                let actionTd = (currentRole === "Admin") ? `<td class="admin-restricted" style="display: table-cell;"><button class="btn btn-sm btn-outline-danger" onclick="deleteCylinder(${index})"><i class="fas fa-trash"></i></button></td>` : `<td class="admin-restricted" style="display: none;"></td>`;
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td class="fw-bold">${cylinder.cylinderNo}</td>
+                    <td>${cylinder.company}</td>
+                    <td>${cylinder.gas}</td>
+                    <td>${cylinder.capacity}</td>
+                    <td><span class="badge bg-secondary">${cylinder.status}</span></td>
+                    <td class="fw-bold text-center text-primary">${cylinder.quantity || 1}</td>
+                    ${billTd}
+                    <td>${cylinder.date || 'Today'}</td>
+                    ${actionTd}
+                `;
+                table.appendChild(row);
+            });
+            applyRolePermissions();
+        }
+
+        async function deleteCylinder(index) {
+            if (currentRole !== 'Admin') return alert("Sirf Admin delete kar sakta hai!");
+            cylinders.splice(index, 1);
+            displayCylinders();
+            updateDashboard();
+            generateAutoCylinderNo();
+        }
+
+        function recordCustomerPayment() {
+            const customer = document.getElementById("paymentCustomerSelect").value;
+            const month = document.getElementById("paymentMonthInput").value.trim();
+            const amt = parseFloat(document.getElementById("paymentReceivedInput").value) || 0;
+            
+            if (!customer) return alert("Customer select karein!");
+            if (!month) return alert("Mahina (Month) enter karein!");
+            if (amt <= 0) return alert("Sahi amount enter karein!");
+
+            if (!payments[customer]) payments[customer] = 0;
+            payments[customer] += amt;
+            localStorage.setItem("customerPayments", JSON.stringify(payments));
+
+            const recordDate = new Date().toISOString().split('T')[0];
+            paymentHistory.push({ customer, month, amount: amt, date: recordDate });
+            localStorage.setItem("customerPaymentHistory", JSON.stringify(paymentHistory));
+
+            document.getElementById("paymentReceivedInput").value = "";
+            document.getElementById("paymentMonthInput").value = "";
+            alert(`Payment of ₹${amt} recorded for ${customer} (${month})!`);
+            updateCustomerLedger();
+            updatePaymentHistoryTable();
+        }
+
+        function updatePaymentHistoryTable() {
+            const table = document.getElementById("paymentHistoryTableBody");
+            if (!table) return;
+            table.innerHTML = "";
+            paymentHistory.forEach((item, idx) => {
+                let deleteAction = `<button class="btn btn-sm btn-outline-danger" onclick="deletePaymentHistory(${idx})"><i class="fas fa-trash"></i></button>`;
+                let row = document.createElement("tr");
+                row.innerHTML = `
+                    <td class="fw-bold">${item.customer}</td>
+                    <td><span class="badge bg-info text-dark">${item.month}</span></td>
+                    <td class="text-end fw-bold text-success">₹${item.amount}</td>
+                    <td>${item.date}</td>
+                    <td class="text-center">${deleteAction}</td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function deletePaymentHistory(idx) {
+            if (currentRole !== 'Admin') return;
+            let item = paymentHistory[idx];
+            if (payments[item.customer]) {
+                payments[item.customer] -= item.amount;
+                if (payments[item.customer] < 0) payments[item.customer] = 0;
+                localStorage.setItem("customerPayments", JSON.stringify(payments));
+            }
+            paymentHistory.splice(idx, 1);
+            localStorage.setItem("customerPaymentHistory", JSON.stringify(paymentHistory));
+            updateCustomerLedger();
+            updatePaymentHistoryTable();
+        }
+
+        function updateCustomerLedger() {
+            const table = document.getElementById("ledgerTableBody");
+            if (!table) return;
+            table.innerHTML = "";
+            
+            let savedCompanies = JSON.parse(localStorage.getItem("companyList")) || defaultCompanies;
+            let allCustomers = new Set([...savedCompanies, ...Object.keys(payments)]);
+            cylinders.forEach(c => allCustomers.add(c.company));
+
+            allCustomers.forEach((comp) => {
+                if (!comp) return;
+                let totalBill = 0;
+                let totalCylinders = 0;
+                cylinders.forEach(c => {
+                    if (c.company === comp) {
+                        totalBill += parseFloat(c.billAmount) || 0;
+                        totalCylinders += parseInt(c.quantity) || 0;
+                    }
+                });
+
+                let paid = payments[comp] || 0;
+                let due = totalBill - paid;
+
+                let dueText = `₹${due} (Due)`;
+                let dueClass = "text-danger fw-bold";
+                if (due < 0) {
+                    dueText = `₹${Math.abs(due)} (Advance)`;
+                    dueClass = "text-success fw-bold";
+                } else if (due === 0) {
+                    dueText = `₹0 (Cleared)`;
+                    dueClass = "text-muted";
+                }
+
+                let adminActions = `<button class="btn btn-sm btn-outline-danger" onclick="deleteCustomerLedger('${comp}')"><i class="fas fa-trash"></i></button>`;
+
+                let row = document.createElement("tr");
+                row.innerHTML = `
+                    <td class="fw-bold">${comp}</td>
+                    <td class="text-center">${totalCylinders}</td>
+                    <td class="text-end fw-bold text-dark">₹${totalBill}</td>
+                    <td class="text-end fw-bold text-success">₹${paid}</td>
+                    <td class="text-end ${dueClass}">${dueText}</td>
+                    <td class="text-center">${adminActions}</td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function deleteCustomerLedger(compName) {
+            if (currentRole !== 'Admin') return alert("Sirf Admin delete kar sakta hai!");
+            if (confirm(`Kya aap ${compName} ka payment record clear/delete karna chahte hain?`)) {
+                delete payments[compName];
+                localStorage.setItem("customerPayments", JSON.stringify(payments));
+                updateCustomerLedger();
+            }
+        }
+
+        function savePayrollEntry() {
+            const name = document.getElementById("staffName").value.trim();
+            const month = document.getElementById("salaryMonth").value.trim();
+            const basic = parseFloat(document.getElementById("basicSalary").value) || 0;
+            const advance = parseFloat(document.getElementById("advanceSalary").value) || 0;
+
+            if (!name || !month) return alert("Staff name aur month daliye!");
+            payrolls.push({ name, month, basic, advance, net: basic - advance });
+            localStorage.setItem("staffPayrolls", JSON.stringify(payrolls));
+            
+            document.getElementById("staffName").value = "";
+            document.getElementById("salaryMonth").value = "";
+            document.getElementById("basicSalary").value = 0;
+            document.getElementById("advanceSalary").value = 0;
+            updatePayrollTable();
+            loadDropdowns();
+            alert("Payroll record saved!");
+        }
+
+        function updatePayrollTable() {
+            const table = document.getElementById("payrollTableBody");
+            if (!table) return;
+            table.innerHTML = "";
+            payrolls.forEach((p, idx) => {
+                let deleteAction = `<button class="btn btn-sm btn-outline-danger" onclick="deletePayroll(${idx})"><i class="fas fa-trash"></i></button>`;
+                let row = document.createElement("tr");
+                row.innerHTML = `
+                    <td class="fw-bold">${p.name}</td>
+                    <td><span class="badge bg-secondary">${p.month}</span></td>
+                    <td class="text-end">₹${p.basic}</td>
+                    <td class="text-end text-warning">₹${p.advance}</td>
+                    <td class="text-end fw-bold text-success">₹${p.net}</td>
+                    <td class="text-center">${deleteAction}</td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function deletePayroll(idx) {
+            if (currentRole !== 'Admin') return;
+            payrolls.splice(idx, 1);
+            localStorage.setItem("staffPayrolls", JSON.stringify(payrolls));
+            updatePayrollTable();
+            loadDropdowns();
+        }
+
+        function updateGodownStockDetails() {
+            const partyTable = document.getElementById("godownPartyTableBody");
+            const godownTotalElement = document.getElementById("godownTotalCount");
+            if (!partyTable) return;
+            partyTable.innerHTML = "";
+            let godownParties = {};
+            let total = 0;
+            cylinders.forEach(c => {
+                if (c.status === "In Stock" || c.status === "Empty") {
+                    let comp = c.company || "Party";
+                    let qty = parseInt(c.quantity) || 1;
+                    total += qty;
+                    if (!godownParties[comp]) godownParties[comp] = { full: 0, empty: 0, total: 0 };
+                    if (c.status === "In Stock") godownParties[comp].full += qty;
+                    else godownParties[comp].empty += qty;
+                    godownParties[comp].total += qty;
+                }
+            });
+            if (godownTotalElement) godownTotalElement.textContent = total;
+            Object.keys(godownParties).forEach(party => {
+                let p = godownParties[party];
+                let row = document.createElement("tr");
+                row.innerHTML = `<td class="fw-bold">${party}</td><td class="text-center text-success fw-bold">${p.full}</td><td class="text-center text-warning fw-bold">${p.empty}</td><td class="text-center fw-bold bg-light">${p.total}</td>`;
+                partyTable.appendChild(row);
+            });
+        }
+
+        function trackCylinderHistory() {
+            const searchNo = document.getElementById("trackerSearchInput").value.trim().toLowerCase();
+            const timeline = document.getElementById("historyTimeline");
+            if (!searchNo) return alert("Cylinder No. enter kijiye!");
+            const history = cylinders.filter(c => c.cylinderNo.toLowerCase() === searchNo);
+            timeline.innerHTML = "";
+            if (history.length === 0) {
+                timeline.innerHTML = `<li class="list-group-item text-danger fw-bold">No history found!</li>`;
+                return;
+            }
+            history.forEach((h, idx) => {
+                let item = document.createElement("li");
+                item.className = "list-group-item d-flex justify-content-between align-items-center py-3";
+                item.innerHTML = `<div><span class="badge bg-primary me-2">Step</span><strong>${h.company}</strong> - Status: <span class="badge bg-info text-dark">${h.status}</span></div><small class="text-muted">${h.date || ''}</small>`;
+                timeline.appendChild(item);
+            });
+        }
+
+        function updateHoldingAlerts() {
+            const table = document.getElementById("holdingTableBody");
+            if (!table) return;
+            table.innerHTML = "";
+            cylinders.forEach(c => {
+                if (c.status === "Out Stock") {
+                    let rentTd = (currentRole === "Admin") ? `<td class="text-end fw-bold text-danger admin-restricted" style="display: table-cell;">₹0</td>` : `<td class="text-end fw-bold text-danger admin-restricted" style="display: none;"></td>`;
+                    let row = document.createElement("tr");
+                    row.innerHTML = `<td class="fw-bold">${c.cylinderNo}</td><td>${c.company}</td><td>${c.date || 'Today'}</td><td class="text-center">10 Days</td><td><span class="badge bg-warning text-dark">Holding</span></td>${rentTd}`;
+                    table.appendChild(row);
+                }
+            });
+            applyRolePermissions();
+        }
+
+        function renderCharts() {
+            let gasCounts = {};
+            let statusCounts = { "In Stock": 0, "Out Stock": 0 };
+            cylinders.forEach(c => {
+                let qty = parseInt(c.quantity) || 1;
+                gasCounts[c.gas] = (gasCounts[c.gas] || 0) + qty;
+                if (c.status === "In Stock") statusCounts["In Stock"] += qty;
+                else statusCounts["Out Stock"] += qty;
+            });
+            const ctx1 = document.getElementById('gasChart').getContext('2d');
+            if (gasChartInstance) gasChartInstance.destroy();
+            gasChartInstance = new Chart(ctx1, { type: 'pie', data: { labels: Object.keys(gasCounts), datasets: [{ data: Object.values(gasCounts), backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6f42c1', '#fd7e14'] }] } });
+
+            const ctx2 = document.getElementById('statusChart').getContext('2d');
+            if (statusChartInstance) statusChartInstance.destroy();
+            statusChartInstance = new Chart(ctx2, { type: 'bar', data: { labels: Object.keys(statusCounts), datasets: [{ label: 'Total Cylinders', data: Object.values(statusCounts), backgroundColor: ['#198754', '#dc3545'] }] } });
+        }
+
+        function updateDashboard() {
+            let total = 0, full = 0, refill = 0, customer = 0;
+            cylinders.forEach(c => {
+                let qty = parseInt(c.quantity) || 1;
+                total += qty;
+                if (c.status === "In Stock") full += qty;
+                else if (c.status === "Out Stock") customer += qty;
+                else refill += qty;
+            });
+            if(document.getElementById("totalCylinders")) document.getElementById("totalCylinders").textContent = total;
+            if(document.getElementById("fullCylinders")) document.getElementById("fullCylinders").textContent = full;
+            if(document.getElementById("emptyCylinders")) document.getElementById("emptyCylinders").textContent = refill;
+            if(document.getElementById("customerCylinders")) document.getElementById("customerCylinders").textContent = customer;
+        }
+
+        async function loadCylindersFromGoogleSheet() {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL + "?action=getCylinders");
+                const result = await response.json();
+                if (result.success && Array.isArray(result.data)) {
+                    cylinders = result.data;
+                    displayCylinders();
+                    updateDashboard();
+                    generateAutoCylinderNo();
+                }
+            } catch (error) { generateAutoCylinderNo(); }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadDropdowns();
+            const savedRole = localStorage.getItem("userRole");
+            if (savedRole) {
+                currentRole = savedRole;
+                document.getElementById("loginOverlay").classList.add("d-none");
+                document.getElementById("appContainer").classList.remove("d-none");
+                document.getElementById("displayRoleBadge").textContent = currentRole;
+                applyRolePermissions();
+                loadCylindersFromGoogleSheet();
+            }
+        });
+    </script>
+</body>
+</html>

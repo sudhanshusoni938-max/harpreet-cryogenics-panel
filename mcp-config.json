@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "jetro": {
+      "command": "C:\\Users\\Admin\\.jetro\\runtime\\node-win32-x64.exe",
+      "args": [
+        "C:\\Users\\Admin\\.jetro\\mcp-server\\index.js"
+      ],
+      "env": {
+        "JET_WORKSPACE": "c:\\Users\\Admin\\Documents\\Harpreet_Cylinder_Panel",
+        "JET_API_URL": "https://api.jetro.ai",
+        "PATH": "C:\\Users\\Admin\\.jetro\\runtime;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Windows\\System32\\OpenSSH\\;C:\\Program Files\\nodejs\\;C:\\Users\\Admin\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\Admin\\AppData\\Local\\OpenClaw\\deps\\portable-git\\mingw64\\bin;C:\\Users\\Admin\\AppData\\Local\\OpenClaw\\deps\\portable-git\\usr\\bin;C:\\Users\\Admin\\AppData\\Local\\Programs\\Ollama;C:\\Users\\Admin\\AppData\\Local\\Python\\bin;C:\\Users\\Admin\\AppData\\Roaming\\npm;C:\\Users\\Admin\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;C:\\Users\\Admin\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Ngrok.Ngrok_Microsoft.Winget.Source_8wekyb3d8bbwe;C:\\Users\\Admin\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin;C:\\Users\\Admin\\AppData\\Local\\GitHubDesktop\\bin"
+      }
+    }
+  }
+}
