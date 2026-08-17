@@ -10,6 +10,7 @@ let currentRole = null;
 let cylinders = [];
 let defaultGases = ["Oxygen", "Nitrogen", "Argon", "CO2", "Helium", "Acetylene", "Hydrogen"];
 let defaultCompanies = ["ABC Industries", "XYZ Hospital", "Harpreet Gas"];
+let defaultCapacities = ["10 CM", "7 CM", "6 CM", "3 CM", "2 CM", "1 CM", "40 KG", "30 KG", "25 KG", "20 KG"];
 let gasChartInstance = null;
 let statusChartInstance = null;
 
@@ -81,6 +82,19 @@ function loadGasDropdown() {
         option.value = gas;
         option.textContent = gas;
         gasSelect.appendChild(option);
+    });
+}
+
+function loadCapacityDropdown() {
+    let savedCapacities = JSON.parse(localStorage.getItem("capacityList")) || defaultCapacities;
+    const capSelect = document.getElementById("capacity");
+    if (!capSelect) return;
+    capSelect.innerHTML = "";
+    savedCapacities.forEach(cap => {
+        let option = document.createElement("option");
+        option.value = cap;
+        option.textContent = cap;
+        capSelect.appendChild(option);
     });
 }
 
@@ -172,7 +186,8 @@ function filterCylinders() {
         c.cylinderNo.toLowerCase().includes(query) ||
         c.company.toLowerCase().includes(query) ||
         c.gas.toLowerCase().includes(query) ||
-        c.status.toLowerCase().includes(query)
+        c.status.toLowerCase().includes(query) ||
+        c.capacity.toLowerCase().includes(query)
     );
     displayCylinders(filtered);
 }
@@ -246,7 +261,7 @@ function displayCylinders(dataList = cylinders) {
             <td class="fw-bold">${cylinder.cylinderNo}</td>
             <td>${cylinder.company}</td>
             <td>${cylinder.gas}</td>
-            <td>${cylinder.capacity}</td>
+            <td><span class="badge bg-light text-dark border fw-bold">${cylinder.capacity}</span></td>
             <td><span class="badge ${statusClass} fw-bold">${cylinder.status}</span></td>
             <td>${cylinder.location || 'Godown'}</td>
             <td class="fw-bold text-center text-primary">${cylinder.quantity || 1}</td>
@@ -435,6 +450,7 @@ async function loadCylindersFromGoogleSheet() {
 document.addEventListener("DOMContentLoaded", () => {
     loadGasDropdown();
     loadCompanyDropdown();
+    loadCapacityDropdown();
     const passInput = document.getElementById("loginPassword");
     if (passInput) {
         passInput.addEventListener("keypress", function(event) {
