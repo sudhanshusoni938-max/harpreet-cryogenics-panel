@@ -251,13 +251,12 @@ function displayCylinders(dataList = cylinders) {
             <td>${cylinder.location || 'Godown'}</td>
             <td class="fw-bold text-center text-primary">${cylinder.quantity || 1}</td>
             <td>${cylinder.date || '2026-08-10'}</td>
-            <td class="admin-only">
+            <td class="admin-only" style="display: ${currentRole === 'Admin' ? '' : 'none'};">
               <button class="btn btn-sm btn-outline-danger" onclick="deleteCylinder(${index})"><i class="fas fa-trash"></i></button>
             </td>
         `;
         table.appendChild(row);
     });
-    applyRolePermissions();
 }
 
 async function deleteCylinder(index) {
