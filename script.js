@@ -1,4 +1,4 @@
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhGTS3u5-oJkkVtIPWBW2Rh8_ZNc93vJbMom8i2JQR96LLEnlJ6dQyn7U-TRc02x9D/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrANUUaMSBBRIW-Qc79tWcv9gW-qI2nPGoVqegy8xEp4mKUkJLYZo_lTNOXf6HpKzH/exec";
 
 // LOGIN CREDENTIALS
 const USERS = {
